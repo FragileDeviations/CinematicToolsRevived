@@ -14,6 +14,7 @@ internal static class TheHandler
     private static GameObject _lastClonedAvatarRef;
     private static readonly List<GameObject> ClonedAvatars = [];
     private static bool _captureAvatar;
+    private static GameObject _avatarHostObj;
     
     #region Camera
 
@@ -86,6 +87,22 @@ internal static class TheHandler
     
     #region Clone
 
+    internal static void SetupHooks()
+    {
+        Hooking.OnLevelLoaded += OnLevelLoaded;
+        Hooking.OnLevelUnloaded += OnLevelUnloaded;
+    }
+
+    private static void OnLevelLoaded(LevelInfo levelInfo)
+    {
+        _avatarHostObj = new GameObject("CineTools_Avatars");
+    }
+
+    private static void OnLevelUnloaded()
+    {
+        _avatarHostObj = null;
+    }
+
     public static void StartCloneAvatar()
     {
         MelonCoroutines.Start(CloneAvatarCoroutine());
@@ -113,7 +130,7 @@ internal static class TheHandler
     private static void CloneAvatar()
     {
         var avatarObj = Player.Avatar.gameObject;
-        var clone = Object.Instantiate(avatarObj);
+        var clone = Object.Instantiate(avatarObj, avatarObj.transform, true);
         clone.transform.position = avatarObj.transform.position;
         clone.transform.rotation = avatarObj.transform.rotation;
         _lastClonedAvatarRef = clone;
